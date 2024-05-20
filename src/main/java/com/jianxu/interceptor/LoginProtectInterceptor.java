@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 /**
  * @projectName: springboot-headline-part
@@ -38,13 +39,17 @@ public class LoginProtectInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+//        if (!(request instanceof ContentCachingRequestWrapper)) {
+//            request = new ContentCachingRequestWrapper(request);
+//        }
+
         String token = request.getHeader("token");
         if (StringUtils.isEmpty(token) || jwtHelper.isExpiration(token)){
             Result<Object> result = Result.build(null, ResultCodeEnum.NOTLOGIN);
             // java 对象转成字符串
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(result);
-            response.getWriter().write(json);
+            response.getWriter().print(json);
             return false ; // 拦截
         }
         return true; // 放行

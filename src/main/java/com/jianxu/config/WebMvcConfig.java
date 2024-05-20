@@ -1,5 +1,6 @@
 package com.jianxu.config;
 
+import com.jianxu.interceptor.HeadLineInterceptor;
 import com.jianxu.interceptor.LoginProtectInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +20,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private LoginProtectInterceptor loginProtectInterceptor;
 
+    @Autowired
+    private HeadLineInterceptor headLineInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginProtectInterceptor).addPathPatterns("/headline/**");
+//        registry.addInterceptor(headLineInterceptor)
+//                .addPathPatterns("/headline/update", "/headline/removeByHid");
     }
 }

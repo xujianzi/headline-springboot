@@ -7,10 +7,13 @@ import com.jianxu.pojo.Headline;
 import com.jianxu.pojo.vo.PortalVo;
 import com.jianxu.service.HeadlineService;
 import com.jianxu.mapper.HeadlineMapper;
+import com.jianxu.utils.JwtHelper;
 import com.jianxu.utils.Result;
+import com.jianxu.utils.ResultCodeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +28,9 @@ public class HeadlineServiceImpl extends ServiceImpl<HeadlineMapper, Headline>
 
     @Autowired
     HeadlineMapper headlineMapper;
+
+    @Autowired
+    JwtHelper jwtHelper;
 
     /**
      * 根据查询条件分页数据
@@ -82,6 +88,71 @@ public class HeadlineServiceImpl extends ServiceImpl<HeadlineMapper, Headline>
         pageInfoMap.put("headline", newMap);
 
         return Result.ok(pageInfoMap);
+    }
+
+    /**
+     * 实现步骤
+     * 1.token获取userId [无需校验，会直接拦截]
+     * 2.封装headline数据
+     * 3.插入
+     *
+     * @param headline
+     * @param token
+     * @return
+     */
+    @Override
+    public Result<Object> publish(Headline headline, String token) {
+        int userId = jwtHelper.getUserId(token).intValue();
+        headline.setPublisher(userId);
+        headline.setPageViews(0);
+        headline.setCreateTime(new Date());
+        headline.setUpdateTime(new Date());
+        int count = headlineMapper.insert(headline);
+        if (count > 0) {
+            return Result.ok(null);
+        }
+        return  null;
+    }
+
+    /**
+     * 根据id查询用户信息
+     * @param hid
+     * @return
+     */
+    @Override
+    public Result findHeadlineByHid(Integer hid) {
+        Headline headline = headlineMapper.selectById(hid);
+        Map<String, Object> pageInfoMap = new HashMap<>();
+        pageInfoMap.put("headline", headline);
+        return Result.ok(pageInfoMap);
+    }
+
+    @Override
+    public Result removeHeadline(Integer hid) {
+        int i = headlineMapper.deleteById(hid);
+        if (i > 0){
+            return Result.ok(null);
+        }
+        return Result.build(null, ResultCodeEnum.NOTLOGIN);
+    }
+
+    /**
+     * 注意事项，修改要获取version 【乐观锁】
+     * 步骤：
+     *    1. 根据hid 获取version
+     *    2. 更新时间
+     *    3. 更新headline
+     * @param headline
+     * @return
+     */
+    @Override
+    public Result updateHeadLine(Headline headline) {
+        Integer version = headlineMapper.selectById(headline.getHid()).getVersion();
+        headline.setVersion(version);
+        headline.setUpdateTime(new Date());
+        headlineMapper.updateById(headline);
+
+        return Result.ok(null);
     }
 
 }
