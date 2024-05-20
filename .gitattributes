@@ -1,0 +1,8 @@
+# 将所有 .md 文件标记为 Markdown
+*.md linguist-language=Markdown
+
+# 将所有 .java 文件标记为 Java
+*.java linguist-language=Java
+
+# 将 docs 目录中的所有文件标记为忽略
+docs/** linguist-documentation
